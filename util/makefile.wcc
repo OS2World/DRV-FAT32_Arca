@@ -1,0 +1,98 @@
+!define _32BITS
+ROOT=..
+PROJ=util
+PATH=..\..\$(PROJ)
+
+DESC=FAT32 utilities (c) 2018 Arca Noae LLC
+
+!include ..\makefile.mk
+
+ADD_DEFS =
+
+COPT=-3s -s -sg -db -d2 -hw -mf -od -zq -q -fp3 -fpi87 $(ADD_DEFS) -i=. -i=.. -i=..\include -i=$(%WATCOM)\h -i=$(%WATCOM)\h\os2
+
+OBJS1=$(PROJ_BLD)\f32stat.obj
+OBJS2=$(PROJ_BLD)\cachef32.obj $(PROJ_BLD)\remount.obj
+OBJS3=$(PROJ_BLD)\monitor.obj
+OBJS4=$(PROJ_BLD)\diskinf0.obj $(PROJ_BLD)\diskinf1.obj $(PROJ_BLD)\diskinf2.obj
+OBJS5=$(PROJ_BLD)\diskdump.obj
+OBJS6=$(PROJ_BLD)\f32mount.obj
+
+TARGETS=$(BINROOT)\os2\f32stat.exe $(BINROOT)\os2\f32mon.exe $(BINROOT)\os2\f32parts.exe  &
+        $(BINROOT)\os2\cachef32.exe $(BINROOT)\os2\diskdump.exe &
+        $(BINROOT)\os2\diskdump.sym $(BINROOT)\os2\cachef32.sym &
+        $(BINROOT)\os2\f32parts.sym $(BINROOT)\os2\f32mon.sym $(BINROOT)\os2\f32stat.sym
+DIRS=..\include
+
+SYS=os2v2
+
+#diskinf0.c: ..\include\fat32def.h ..\include\fat32.h
+#diskinf1.c: ..\include\fat32def.h ..\include\fat32.h
+#diskinf2.c: ..\include\fat32def.h ..\include\fat32.h
+#monitor.c:  ..\include\fat32def.h
+#cachef32.c: ..\include\fat32def.h
+#f32stat.c:  ..\include\fat32def.h
+
+$(BINROOT)\os2\f32stat.exe:
+
+$(BINROOT)\os2\f32mon.exe:
+
+$(BINROOT)\os2\f32parts.exe:
+
+$(BINROOT)\os2\cachef32.exe:
+
+$(BINROOT)\os2\diskdump.exe:
+
+$(BINROOT)\os2\diskdump.sym:
+
+$(BINROOT)\os2\cachef32.sym:
+
+$(BINROOT)\os2\f32parts.sym:
+
+$(BINROOT)\os2\f32mon.sym:
+
+$(BINROOT)\os2\f32stat.sym:
+
+$(PROJ_BLD)\f32stat.lnk: $(PROJ_BLD)\f32stat.ols
+
+$(PROJ_BLD)\cachef32.lnk: $(PROJ_BLD)\cachef32.ols
+
+$(PROJ_BLD)\f32mon.lnk: $(PROJ_BLD)\f32mon.ols
+
+$(PROJ_BLD)\f32parts.lnk: $(PROJ_BLD)\f32parts.ols
+
+$(PROJ_BLD)\diskdump.lnk: $(PROJ_BLD)\diskdump.ols
+
+$(PROJ_BLD)\f32stat.ols: $(OBJS1) makefile.wcc ..\makefile.mk
+ @%create $^@
+ @for %e in ($(OBJS1)) do @%append $^@ FILE %e
+
+$(PROJ_BLD)\cachef32.ols: $(OBJS2) makefile.wcc ..\makefile.mk
+ @%create $^@
+ @for %e in ($(OBJS2)) do @%append $^@ FILE %e
+
+$(PROJ_BLD)\f32mon.ols: $(OBJS3) makefile.wcc ..\makefile.mk
+ @%create $^@
+ @for %e in ($(OBJS3)) do @%append $^@ FILE %e
+
+$(PROJ_BLD)\f32parts.ols: $(OBJS4) makefile.wcc ..\makefile.mk
+ @%create $^@
+ @for %e in ($(OBJS4)) do @%append $^@ FILE %e
+
+$(PROJ_BLD)\diskdump.ols: $(OBJS5) makefile.wcc ..\makefile.mk
+ @%create $^@
+ @for %e in ($(OBJS5)) do @%append $^@ FILE %e
+
+.ols.lnk:
+ @%create $@
+ @%append $@ SYSTEM $(SYS)
+ @%append $@ NAME $(BINROOT)\os2\$^&.exe
+ @%append $@ OPTION DESCRIPTION '$(FILEVER)  $(DESC)'
+ @%append $@ OPTION ST=384000
+ @%append $@ OPTION HEAP=384000
+ @%append $@ OPTION QUIET
+ @%append $@ DEBUG ALL
+ @%append $@ OPTION MAP=$[*.wmp
+ @%append $@ LIBPATH $(%WATCOM)\lib386;$(%WATCOM)\lib386\os2;$(LIBROOT)
+ @%append $@ LIB os2386,clib3s # ,zlib,qemu-block
+ @%append $@ @$[@

@@ -1,0 +1,199 @@
+<WARPIN CODEPAGE=850 VERSION="1.0.14">
+<HEAD>
+<TITLE>Arca Noae FAT32 driver FAT32 (5.0.0)
+</TITLE>
+
+<REXX NAME=GetEnv>
+   BootDrive = SysBootDrive();
+   ConfigSys = BootDrive||'\config.sys';
+   OsDir=VALUE('OSDIR',,'OS2ENVIRONMENT');
+   if (OsDir='') then OsDir='?:\OS2';
+   OsDocTarget='TARGET="'||OsDir||'\DOC\FAT32" LONGFILENAMES SELECT';
+   OsBookTarget='TARGET="'||OsDir||'\BOOK" LONGFILENAMES SELECT';
+   if (TRANSLATE(RIGHT(OsDir,3))='SYS') then do
+     OsAppTarget='TARGET="'||OsDir||'\BIN" LONGFILENAMES SELECT';
+   end
+   else do
+     OsAppTarget='TARGET="?:\OS2" LONGFILENAMES SELECT';
+   end
+   OsSymTarget='TARGET="'||OsAppTarget||'" LONGFILENAMES';
+
+   rc = WirexxPutEnv('OsAppTarget',OsAppTarget);
+   rc = WirexxPutEnv('OsDocTarget',OsDocTarget);
+   rc = WirexxPutEnv('OsBookTarget',OsBookTarget);
+
+   Parse Arg EnvVar .
+   Return WirexxGetEnv(EnvVar);
+</REXX>
+
+<REXX NAME=CopyMsgs>
+   PARSE UPPER ARG msgfile
+   CALL RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
+   CALL SysLoadFuncs
+   OsDir=VALUE('OSDIR',,'OS2ENVIRONMENT');
+   if (OsDir='') then OsDir='?:\OS2';
+   if (TRANSLATE(RIGHT(OsDir,3))='SYS') then do
+     copycmd='EXECUTE="copy 'msgfile' '||OsDir||'\BIN\MESSAGE.TXT"';
+   end
+   else do
+     copycmd='EXECUTE="copy 'msgfile' '||OsDir||'\MESSAGE.TXT"';
+   end
+
+   Return copycmd;
+</REXX>
+
+<PCK INDEX=1
+  PACKAGEID="Arca Noae\FAT32.IFS\MAIN_FS\5\0\0"
+  TITLE="FAT32 filesystem driver"
+  TARGET="?:\OS2"
+  FIXED
+  SELECT
+  CONFIGSYS="IFS=$(1)\FAT32.IFS /cache:2048 /h /q /ac:* /largefiles | UNIQUE(FAT32.IFS) ADDAFTER(FS.IFS)"
+  >These files constitute the core of the FAT32 driver.
+</PCK>
+
+<PCK INDEX=2
+  PACKAGEID="Arca Noae\FAT32.IFS\DLL\5\0\0"
+  TITLE="Supporting libraries"
+  TARGET="?:\OS2\DLL"
+  FIXED
+  SELECT
+  >These libraries are required for format and disk check functions.
+</PCK>
+
+<PCK INDEX=3
+  PACKAGEID="Arca Noae\FAT32.IFS\BIN\5\0\0"
+  TITLE="Supporting programs"
+  TARGET="$(1)"
+  FIXED
+  SELECT
+  CONFIGSYS="CALL=$(1)\CACHEF32.EXE /f /p:2 /m:50000 /b:250 /d:5000 | UNIQUE(CACHEF32.EXE) ADDAFTER(FAT32.IFS)"
+  >Cache, disk check, and filesystem monitoring programs.
+</PCK>
+
+<PCK INDEX=4
+  PACKAGEID="Arca Noae\FAT32.IFS\DOC\5\0\0"
+  TITLE="FAT32 text documentation"
+  =("GetEnv OsDocTarget")
+  =("CopyMsgs $(4)\FAT32MSGS.TXT")
+  >Filesystem readme, license, and updated system FAT32MSGS.TXT to include FAT32-specific CHKDSK messages.
+</PCK>
+
+<PCK INDEX=5
+  PACKAGEID="Arca Noae\FAT32.IFS\INF\5\0\0"
+  TITLE="FAT32 user guide"
+  =("GetEnv OsBookTarget")
+  >Filesystem manual, in INF format.
+</PCK>
+
+<PCK INDEX=9
+   PACKAGEID="Arca Noae\FAT32.IFS\IFS symbols\5\0\0"
+   TITLE="Debug symbols for FAT32 filesystem driver"
+   TARGET="$(1)"
+   FIXED
+   >These optional files assist in debugging the core filesystem driver.
+</PCK>
+
+<PCK INDEX=10
+   PACKAGEID="Arca Noae\FAT32.IFS\Utilities symbols\5\0\0"
+   TITLE="Debug symbols for supporting applications"
+   TARGET="$(1)"
+   FIXED
+   >These optional files assist in debugging the supporting applications.
+</PCK>
+
+<PCK INDEX=11
+   PACKAGEID="Arca Noae\FAT32.IFS\Library symbols\5\0\0"
+   TITLE="Debug symbols for supporting libraries"
+   FIXED
+   TARGET="$(2)"
+   >These optional files assist in debugging the support libraries.
+</PCK>
+
+</HEAD>
+
+<BODY>
+<!-- Introduction -->
+<PAGE INDEX=1 TYPE=TEXT>
+ <TEXT>
+  FAT32 IFS - an installable filesystem driver for read/write access to
+  files and directories located on FAT32-formatted volumes.
+
+  The next pages will guide you through installing or updating the driver
+  on your system.
+ </TEXT>
+ <NEXTBUTTON TARGET=10>~Next</NEXTBUTTON>
+</PAGE>
+
+<!--- Next pages (2-9): empty pages
+  Until now, WarpIN v1.0.1 and earlier need pages with every number from 1
+  to the last present index, though you can skip them freely and they can be
+  empty (phew!)
+-->
+
+<PAGE INDEX=2 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=3 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=4 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=5 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=6 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=7 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=8 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+<PAGE INDEX=9 TYPE="TEXT"> <TEXT> </TEXT> </PAGE>
+
+<!-- Next pages (10-19): English language -->
+
+<PAGE INDEX=10 TYPE=README>
+ <TEXT>Disclaimer, description, and credits. PLEASE READ.</TEXT>
+ <README FORMAT=HTML>
+  <B>Use this driver at your own risk.</B>
+
+  <P>This package contains a driver that allows OS/2 Warp 4 and above users access
+  to data files on FAT32 partitions. It also automates the driver installation,
+  and avoids further manual [de]installation of files and CONFIG.SYS manipulation.
+
+  <P>This project is based on the original FAT32 source code by Henk Kelder who was
+  kind enough to release the source to Netlabs (netlabs.org) in January of 2002. In
+  June of 2018, due to perceived expansion of the project beyond its originally
+  stated goals, Arca Noae forked the Netlabs FAT32 project to produce a package
+  focused solely upon the FAT32 filesystem.
+
+  <P>
+  <UL>
+  Authors:
+  <LI>Henk Kelder: original author
+  <LI>Brian Smith: contributor
+  <LI>KO Myung-Hun: main developer for the Netlabs FAT32 IFS driver
+  <LI>Lars Edmann: developer
+  <LI>Alfredo Fern ndez D¡az: creator of the Netlabs WarpIN Script for FAT32 and contributor
+  <LI>David Graser: creator of the original FAT32.INF file and original WarpIN script
+  maintainer
+  <LI>Valery V. Sedletski: Netlabs FAT32 IFS version 0.10 developer
+  <LI>Andy Willis: maintainer of the Arca Noae FAT32 fork
+  <LI>Gregg Young: developer/contributor to the Arca Noae fork
+  <LI>Steven Levine: developer/contributor to the Arca Noae fork
+  <LI>Lewis Rosenthal: documentation for the Arca Noae fork
+  <LI>Jan van Wijk: technical (and other) proofreading of the user's guide for the Arca Noae fork
+  </UL>
+
+ </README>
+ <NEXTBUTTON TARGET=11>~Next</NEXTBUTTON>
+</PAGE>
+
+<PAGE INDEX=11 TYPE=README>
+ <TEXT>The FAT32 filesystem driver is licensed under the GNU Lesser General Public License, below.</TEXT>
+ <README EXTRACTFROMPCK="4" format=PLAIN>COPYING</README>
+ <NEXTBUTTON TARGET=12>~Next</NEXTBUTTON>
+</PAGE>
+
+<PAGE INDEX=12 TYPE=CONTAINER>
+ <TEXT>Select the components to install.</TEXT>
+ <NEXTBUTTON TARGET=13>~Next</NEXTBUTTON>
+</PAGE>
+
+<PAGE INDEX=13 TYPE=CONFIGURE>
+ <TEXT>Ready to install.</TEXT>
+ <NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
+</PAGE>
+
+</BODY>
+</WARPIN>

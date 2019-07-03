@@ -1,0 +1,9 @@
+ROOT = .
+PROJ = .
+PATH = ..
+
+!include makefile.mk
+
+DIRS = include ufat32 &
+       util ifs\libc loop ifs f32chk ifsinf\ifs ifsinf\fat32
+#       test ufat32\win32 util\zlib util\qemu-img

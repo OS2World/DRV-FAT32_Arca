@@ -1,0 +1,74 @@
+!IFNDEF DEBUG
+!ERROR ,SPECIFY EITHER DEBUG=0 or DEBUG=1 ON THE NMAKE COMMANDLINE !
+!ENDIF
+
+ADD_DEFS =
+
+!IF $(DEBUG)
+COPTS=/Od /Zi /J /D__16BITS__ /D__OS2__ $(ADD_DEFS)
+AOPTS=/Zi /Ilibc
+LOPTS=/COD
+L32OPTS=/DE
+!ELSE
+COPTS=/Gr /J /D__16BITS__ /D__OS2__ $(ADD_DEFS) # /Ox
+AOPTS=/Ilibc
+LOPTS=/E:2
+L32OPTS=/E:2
+!ENDIF
+
+LINK=$(BOOTDRIVE)\os2\link386.exe
+CFLAGS=/nologo $(COPTS) /G2s /Zl /Alfu /Zp1 /W3 /c /Fc%|dpfF.lst
+AFLAGS=/nologo $(AOPTS) /c /Sa /Sn /Fl%|dpfF.lst
+LFLAGS=/NOL $(LOPTS) /MAP /FAR /PACKC /PACKD /NOD /A:512
+L32FLAGS=/NOL /BAT $(L32OPTS) /MAP /NOP /NOE /NOD
+
+.SUFFIXES:
+.SUFFIXES: .sym .map .ifs .obj .def .c .asm
+
+.c.obj:
+    @cl $(CFLAGS) %s
+
+.asm.obj:
+    @ml $(AFLAGS) %s
+
+.map.sym:
+    @mapsym %s >nul 2>&1
+
+all: fat32.ifs fat32.sym
+
+FAT32OBJS=fat32a.obj fat32b.obj ifsmount.obj ifsfind.obj ifsdir.obj ifsattr.obj\
+          ifsfile.obj ifslog.obj ifscache.obj ifsswap.obj ifsmem.obj\
+          ifsea.obj ifslang.obj ifsachk.obj\
+          mem.obj alphabet.obj i8m086.obj i8d086.obj # helpers.obj
+
+fat32.ifs : $(FAT32OBJS) ..\lib\fat32.def makefile.msc
+    @$(LINK) $(L32FLAGS) $(FAT32OBJS) ,$@,, $(DDKTOOLS)\toolkits\msc60\lib\LLIBCDLL FSHELPER DHCALLS $(DDK)\base\lib\OS2286 $(DDK)\base\lib\OS2286P, ..\lib\fat32.def
+
+fat32a.obj:   fat32a.c     ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+fat32b.obj:   fat32b.c     ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsmount.obj: ifsmount.c   ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsfind.obj:  ifsfind.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsdir.obj:   ifsdir.c     ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsfile.obj:  ifsfile.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifslog.obj:   ifslog.c     ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifscache.obj: ifscache.c   ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsswap.obj:  ifsswap.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsmem.obj:   ifsmem.c     ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsea.obj:    ifsea.c      ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifslang.obj:  ifslang.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsattr.obj:  ifsattr.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+ifsachk.obj:  ifsachk.c    ..\include\fat32ifs.h ..\include\fat32def.h ..\include\portable.h
+helpers.obj:  helpers.asm
+ufat32.obj:   ufat32.c     ..\include\fat32def.h
+
+mem.obj: libc\mem.c
+    @cl $(CFLAGS) %s
+
+alphabet.obj: libc\alphabet.c
+    @cl $(CFLAGS) %s
+
+i8d086.obj: libc\i8d086.asm
+    @ml $(AFLAGS) %s
+
+i8m086.obj: libc\i8m086.asm
+    @ml $(AFLAGS) %s
